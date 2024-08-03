@@ -1,4 +1,3 @@
-import subprocess
 import click
 from importlib import import_module
 
@@ -9,33 +8,51 @@ def main():
     pass
 
 
+def get_linter(linter_name):
+    try:
+        linter = import_module(f"linter_cli.linters.{linter_name}")
+        return linter
+    except ImportError:
+        click.echo(
+            f"""Linter '{linter_name}' not found.
+                        Please install it using `pip install linter-cli[{linter_name}]`"""
+        )
+        raise
+
+
+def get_formatter(formatter_name):
+    try:
+        formatter = import_module(f"linter_cli.formatters.{formatter_name}")
+        return formatter
+    except ImportError:
+        click.echo(
+            f"""Formatter '{formatter_name}' not found.
+                    Please install it using `pip install linter-cli[{formatter_name}]`"""
+        )
+        raise
+
+
 @main.command()
 @click.argument("files", nargs=-1)
-@click.option(
-    "autofix", "--autofix", is_flag=True, help="Automatically fix the issues."
-)
+@click.option("--autofix", is_flag=True, help="Automatically fix the issues.")
 def lint(files, autofix):
+    """Lint and optionally fix files."""
+
     for file in files:
-        if file.endswith(".yaml") or file.endswith(".yml"):
+        if file.endswith((".yaml", ".yml")):
             try:
-                linter = import_module("linter_cli.linters.yaml_linter")
-                linter.lint_yaml(file)
-
+                linter_module = get_linter("yaml_linter")
+                if autofix:
+                    formatter_module = get_formatter("yaml_formatter")
             except ImportError:
-                click.echo(
-                    "YAML linter not found. Please install it using `pip install linter-cli[yaml]`"
-                )
-            except subprocess.CalledProcessError as e:
-                click.echo(f"Error linting {file}: {e}")
-
-        if autofix:
+                return
             try:
-                formatter = import_module("linter_cli.formatters.yaml_formatter")
-                formatter.format_yaml(file)
-            except ImportError:
-                click.echo(
-                    """YAML formatter not found.
-                        Please install it using `pip install linter-cli[yaml]`"""
-                )
-            except subprocess.CalledProcessError as e:
-                click.echo(f"Error formatting {file}: {e}")
+                linter_module.lint_yaml(file)
+                click.echo(f"YAML linting passed for: {file}")
+
+                if autofix:
+                    formatter_module.format_yaml(file)
+                    click.echo(f"YAML auto-fixed and saved: {file}")
+
+            except Exception as e:
+                click.echo(f"Error processing {file}: {e}")
