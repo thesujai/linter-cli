@@ -56,3 +56,21 @@ def lint(files, autofix):
 
             except Exception as e:
                 click.echo(f"Error processing {file}: {e}")
+
+        elif file.endswith(".py"):
+            try:
+                linter_module = get_linter("python_linter")
+                if autofix:
+                    formatter_module = get_formatter("to_be_implemented")
+            except ImportError:
+                return
+            try:
+                linter_module.lint_python(file)
+                click.echo(f"Python linting passed for: {file}")
+
+                if autofix:
+                    formatter_module.format_python(file)
+                    click.echo(f"Python auto-fixed and saved: {file}")
+
+            except Exception as e:
+                click.echo(f"Error processing {file}: {e}")

@@ -20,6 +20,7 @@ setup(
     install_requires=read_requirements("requirements/base.txt"),
     extras_require={
         "yaml": read_requirements("requirements/yaml.txt"),
+        "python": read_requirements("requirements/python.txt"),
     },
     entry_points={
         "console_scripts": [
