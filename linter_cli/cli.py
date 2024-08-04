@@ -61,7 +61,7 @@ def lint(files, autofix):
             try:
                 linter_module = get_linter("python_linter")
                 if autofix:
-                    formatter_module = get_formatter("to_be_implemented")
+                    formatter_module = get_formatter("python_formatter")
             except ImportError:
                 return
             try:

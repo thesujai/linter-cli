@@ -165,4 +165,4 @@ cython_debug/
 # dont track example as you may accidentally push the formatted file where there is supposed
 # to be an invalid file
 # if you are adding a new example, do it with git add <new_exampple_path> -f
-examples/
+tests/examples/
