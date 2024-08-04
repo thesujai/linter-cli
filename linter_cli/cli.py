@@ -1,3 +1,5 @@
+import os
+
 import click
 from importlib import import_module
 
@@ -32,45 +34,48 @@ def get_formatter(formatter_name):
         raise
 
 
+def lint_file(file, autofix):
+    if file.endswith((".yaml", ".yml")):
+        try:
+            linter_module = get_linter("yaml_linter")
+            if autofix:
+                formatter_module = get_formatter("yaml_formatter")
+        except ImportError:
+            return
+        try:
+            linter_module.lint_yaml(file)
+            click.echo(f"YAML linting passed for: {file}")
+            if autofix:
+                formatter_module.format_yaml(file)
+                click.echo(f"YAML auto-fixed and saved: {file}")
+        except Exception as e:
+            click.echo(f"Error processing {file}: {e}")
+    elif file.endswith(".py"):
+        try:
+            linter_module = get_linter("python_linter")
+            if autofix:
+                formatter_module = get_formatter("python_formatter")
+        except ImportError:
+            return
+        try:
+            linter_module.lint_python(file)
+            click.echo(f"Python linting passed for: {file}")
+            if autofix:
+                formatter_module.format_python(file)
+                click.echo(f"Python auto-fixed and saved: {file}")
+        except Exception as e:
+            click.echo(f"Error processing {file}: {e}")
+
+
 @main.command()
-@click.argument("files", nargs=-1)
+@click.argument("paths", nargs=-1)
 @click.option("--autofix", is_flag=True, help="Automatically fix the issues.")
-def lint(files, autofix):
+def lint(paths, autofix):
     """Lint and optionally fix files."""
-
-    for file in files:
-        if file.endswith((".yaml", ".yml")):
-            try:
-                linter_module = get_linter("yaml_linter")
-                if autofix:
-                    formatter_module = get_formatter("yaml_formatter")
-            except ImportError:
-                return
-            try:
-                linter_module.lint_yaml(file)
-                click.echo(f"YAML linting passed for: {file}")
-
-                if autofix:
-                    formatter_module.format_yaml(file)
-                    click.echo(f"YAML auto-fixed and saved: {file}")
-
-            except Exception as e:
-                click.echo(f"Error processing {file}: {e}")
-
-        elif file.endswith(".py"):
-            try:
-                linter_module = get_linter("python_linter")
-                if autofix:
-                    formatter_module = get_formatter("python_formatter")
-            except ImportError:
-                return
-            try:
-                linter_module.lint_python(file)
-                click.echo(f"Python linting passed for: {file}")
-
-                if autofix:
-                    formatter_module.format_python(file)
-                    click.echo(f"Python auto-fixed and saved: {file}")
-
-            except Exception as e:
-                click.echo(f"Error processing {file}: {e}")
+    for path in paths:
+        if os.path.isfile(path):
+            lint_file(path, autofix)
+        elif os.path.isdir(path):
+            for root, _, files in os.walk(path):
+                for file in files:
+                    lint_file(os.path.join(root, file), autofix)
