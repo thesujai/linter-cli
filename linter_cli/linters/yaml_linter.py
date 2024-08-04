@@ -10,3 +10,5 @@ def lint_yaml(file_path):
             print(result.stdout)
     except Exception as e:
         print(f"Error linting {file_path}: {e}")
+
+    return result
