@@ -13,9 +13,8 @@ def read_requirements(file):
 
 
 setup(
-    name="linter-cli",
+    name="lintmate",
     version="0.1.0",
-    author="thesujai",
     packages=find_packages(),
     install_requires=read_requirements("requirements/base.txt"),
     extras_require={
@@ -24,7 +23,19 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "linter_cli = linter_cli.cli:main",
+            "lintmate= linter_cli.cli:main",
         ],
     },
+    author="thesujai",
+    author_email="sujayscience1234@gmail.com",
+    description="A CLI tool for linting and formatting files. Without worying about any dependencies.",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
+    url="https://github.com/thesujai/linter-cli",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+    python_requires=">=3.9",
 )
